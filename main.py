@@ -74,7 +74,7 @@ def main():
                     dataset_fn=exp_config["dataset_fn"],
                     dataset_name=dataset_name,
                     activation=activation,
-                    epochs=2,  # Повний цикл із 30 епох для фінальних результатів
+                    epochs=30,  # Повний цикл із 30 епох для фінальних результатів
                     batch_size=exp_config["batch_size"],
                     learning_rate=exp_config["learning_rate"],
                 )

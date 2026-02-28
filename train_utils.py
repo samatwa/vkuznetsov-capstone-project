@@ -86,7 +86,7 @@ def run_experiment(
     dataset_fn,
     dataset_name,
     activation,
-    epochs=2,
+    epochs=30,
     batch_size=128,
     learning_rate=None,
 ):

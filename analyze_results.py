@@ -12,7 +12,7 @@ if not os.path.exists(file_path):
         file_path = "final_experiment_results.csv"
     else:
         print(f"Помилка: Файл {file_path} не знайдено.")
-      
+
 print(f"Читаємо дані з: {file_path}\n")
 try:
     df = pd.read_csv(file_path)
@@ -105,7 +105,8 @@ def plot_tradeoff(summary_df, title):
     filename = f"results/tradeoff_{title.replace('/', '_').replace(' ', '_')}.png"
     plt.savefig(filename)
     print(f"\nГрафік збережено: {filename}")
-    plt.close()
+    plt.show()  
+    plt.close() 
 
 
 # Будуємо графіки
