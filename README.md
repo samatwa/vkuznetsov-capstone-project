@@ -1,47 +1,47 @@
-# Capstone Project: Activation Functions Benchmark
+# Capstone Проєкт: Бенчмарк Функцій Активації
 
-This project benchmarks 9 activation functions across 2 deep learning architectures:
-- **ResNet-34** on **CIFAR-10** (Computer Vision)
-- **Transformer Encoder** on **AG News** (NLP)
+Цей проєкт порівнює 9 функцій активації на 2 архітектурах глибокого навчання:
+- **ResNet-34** на **CIFAR-10** (Комп'ютерний зір)
+- **Transformer Encoder** на **AG News** (NLP / Обробка природної мови)
 
-## Requirements
+## Вимоги
 
-Install dependencies:
+Встановіть залежності:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Project Structure
+## Структура Проєкту
 
-- `activations.py`: Custom activation functions (Mish, Swish, etc.) and registry.
-- `models/`: Contains model definitions (`resnet.py`, `transformer.py`).
-- `data.py`: Data loading and preprocessing scripts.
-- `train_utils.py`: Training loop, metrics calculation (FLOPs, Memory, Accuracy).
-- `main.py`: Main script to run all 18 experiments.
+- `activations.py`: Користувацькі функції активації (Mish, Swish тощо) та реєстр.
+- `models/`: Містить визначення моделей (`resnet.py`, `transformer.py`).
+- `data.py`: Скрипти завантаження та попередньої обробки даних.
+- `train_utils.py`: Цикл навчання, розрахунок метрик (FLOPs, Пам'ять, Точність).
+- `main.py`: Головний скрипт для запуску всіх 18 експериментів.
 
-## Running Experiments
+## Запуск Експериментів
 
-To run the full suite of experiments:
+Щоб запустити повний набір експериментів:
 ```bash
 python main.py
 ```
 
-This will:
-1. Download datasets (CIFAR-10, AG News).
-2. Train models using a **fixed Train/Validation/Test split (90% Train, 10% Val of the official Training set, plus official Test set)**.
-3. Train for **30 epochs** per experiment (reduced from 50 for efficiency).
-4. Save checkpoints to `checkpoints/` and detailed results to `results/`.
-5. Use a fixed random seed (`42`) for full reproducibility.
+Це виконає такі дії:
+1. Завантажить датасети (CIFAR-10, AG News).
+2. Навчить моделі, використовуючи **фіксований поділ Train/Validation/Test (90% Train, 10% Val від офіційного тренувального набору, плюс офіційний тестовий набір)**.
+3. Навчатиме протягом **30 епох** для кожного експерименту (зменшено з 50 для ефективності).
+4. Збереже контрольні точки (checkpoints) у `checkpoints/` та детальні результати у `results/`.
+5. Використовує фіксований random seed (`42`) для повної відтворюваності.
 
-## Metrics
-- Accuracy
-- Validation Loss
-- Training Time
-- FLOPs (Floating Point Operations)
-- Gradient Norm
-- Peak GPU Memory Usage
+## Метрики
+- Точність (Accuracy)
+- Втрати на валідації (Validation Loss)
+- Час навчання (Training Time)
+- FLOPs (Операції з плаваючою комою)
+- Норма градієнта (Gradient Norm)
+- Пікове використання пам'яті GPU (Peak GPU Memory Usage)
 
-## Activation Functions Compared
+## Порівнювані Функції Активації
 - ReLU
 - LeakyReLU
 - ELU
@@ -52,7 +52,8 @@ This will:
 - Hardswish
 - Softplus
 
-## Notes
-- Ensure CUDA is available for faster training.
-- Adjust `batch_size` in `main.py` if encountering OOM errors.
-- Random seeds are fixed to `42` across `main.py` and `train_utils.py`.
+## Примітки
+- Переконайтеся, що CUDA доступна для швидшого навчання.
+- Змініть `batch_size` у `main.py`, якщо виникають помилки OOM (недостатньо пам'яті).
+- Random seeds зафіксовані на значенні `42` у `main.py` та `train_utils.py`.
+
