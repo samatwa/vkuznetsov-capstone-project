@@ -1,0 +1,11 @@
+torch
+torchvision
+# torchtext
+datasets
+torchprofile
+tqdm
+numpy
+pandas
+matplotlib
+seaborn
+psutil
