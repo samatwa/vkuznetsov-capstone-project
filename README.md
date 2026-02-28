@@ -47,7 +47,7 @@ python main.py
 - ELU
 - SELU
 - GELU
-- Swish (SiLU)
+- Swish
 - Mish
 - Hardswish
 - Softplus
