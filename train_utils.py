@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 import time
 import psutil
-import torchprofile
 from torch.utils.data import DataLoader, Subset
 import pandas as pd
 import numpy as np
@@ -24,35 +23,6 @@ def calculate_metrics(model, dataloader, criterion, device):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
     return running_loss / total, 100 * correct / total
-
-
-def get_comp_cost(model, input_size, device, is_transformer=False, vocab_size=None):
-    """
-    Розрахунок FLOPs за допомогою torchprofile.
-    Для Transformer: torchprofile може занижувати значення через оптимізовані ядра SDPA.
-    Додаткова аналітична корекція застосовується в run_experiment().
-    """
-    if is_transformer:
-        # [batch, seq_len] формат для відповідності batch_first=True
-        inputs = torch.randint(0, vocab_size, input_size).to(device)
-    else:
-        inputs = torch.randn(input_size).to(device)
-
-    try:
-        flops = torchprofile.profile_macs(model, inputs)
-    except Exception as e:
-        print(f"torchprofile failed: {e}")
-        flops = 0
-    return flops
-
-
-def analytical_transformer_flops(seq_len, d_model, nlayers):
-    """
-    Аналітична оцінка FLOPs для шарів уваги трансформера.
-    На шар: FLOPs ≈ 2 * L^2 * d (для scaled dot-product attention)
-    Загалом для всіх шарів.
-    """
-    return 2 * (seq_len**2) * d_model * nlayers
 
 
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
@@ -173,28 +143,6 @@ def run_experiment(
     # CosineAnnealing плавно зменшує LR — краще ніж StepLR для 30 епох
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
-    # Розрахунок FLOPs
-    flops = 0
-    try:
-        flops = get_comp_cost(
-            model,
-            input_sample_size,
-            device,
-            is_transformer=(dataset_name == "AGNews"),
-            vocab_size=(vocab_size if dataset_name == "AGNews" else None),
-        )
-        # Додати аналітичні FLOPs уваги для Transformer (torchprofile пропускає SDPA)
-        if dataset_name == "AGNews":
-            attn_flops = analytical_transformer_flops(
-                seq_len=100, d_model=256, nlayers=2
-            )
-            flops += attn_flops
-            print(f"Transformer FLOPs (profile + analytical attention): {flops:,}")
-        else:
-            print(f"Model FLOPs: {flops:,}")
-    except Exception as e:
-        print(f"Error calculating FLOPs: {e}")
-
     results = []
     total_training_time = 0
 
@@ -227,7 +175,6 @@ def run_experiment(
                 "total_training_time": total_training_time,
                 "avg_grad_norm": avg_grad_norm,
                 "peak_memory_mb": peak_mem,
-                "flops": flops,
             }
         )
 
