@@ -6,14 +6,14 @@ import numpy as np
 from datasets import load_dataset
 from collections import Counter
 
-# Fix Random Seed
+# Фіксація Random Seed
 torch.manual_seed(42)
 np.random.seed(42)
 
 
 def get_cifar10_loaders(batch_size=128, val_split=0.1, num_workers=0):
     """
-    Returns CIFAR-10 data loaders: train, val, test.
+    Повертає завантажувачі даних CIFAR-10: train, val, test.
     """
     transform_train = transforms.Compose(
         [
@@ -62,11 +62,11 @@ def get_cifar10_loaders(batch_size=128, val_split=0.1, num_workers=0):
 
 def get_ag_news_loaders(batch_size=64, max_len=256, vocab_size=20000, num_workers=0):
     """
-    Returns AG News data loaders using HuggingFace datasets library.
-    Returns: train_loader, val_loader, test_loader, vocab_len
+    Повертає завантажувачі даних AG News за допомогою бібліотеки HuggingFace datasets.
+    Повертає: train_loader, val_loader, test_loader, vocab_len
 
-    NOTE: collate_fn returns tensors in [batch, seq_len] format (batch_first=True)
-    to match the updated TransformerModel with batch_first=True.
+    ПРИМІТКА: collate_fn повертає тензори у форматі [batch, seq_len] (batch_first=True)
+    щоб відповідати оновленій TransformerModel з batch_first=True.
     """
     print("Loading AG News via HuggingFace...")
     dataset = load_dataset("ag_news")
@@ -100,14 +100,14 @@ def get_ag_news_loaders(batch_size=64, max_len=256, vocab_size=20000, num_worker
 
         label_list = torch.tensor(label_list, dtype=torch.int64)
 
-        # batch_first=True: output shape is [batch, seq_len]
-        # This matches TransformerModel which now expects [batch, seq_len]
+        # batch_first=True: вихідна форма [batch, seq_len]
+        # Це відповідає TransformerModel, яка тепер очікує [batch, seq_len]
         text_list = pad_sequence(
             text_list, batch_first=True, padding_value=vocab["<pad>"]
         )
         return text_list, label_list
 
-    # Split full train into train/val (90/10)
+    # Розділення повного тренувального набору на train/val (90/10)
     num_train = len(full_train_data)
     indices = list(range(num_train))
     split = int(np.floor(0.1 * num_train))

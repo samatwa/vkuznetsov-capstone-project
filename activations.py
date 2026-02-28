@@ -21,8 +21,8 @@ class Swish(nn.Module):
 
 def get_activation(name):
     """
-    Returns the activation function module based on the name.
-    Supports: ReLU, LeakyReLU, ELU, SELU, GELU, Swish, Mish, Hardswish, Softplus.
+    Повертає модуль функції активації на основі назви.
+    Підтримує: ReLU, LeakyReLU, ELU, SELU, GELU, Swish, Mish, Hardswish, Softplus.
     """
     activations = {
         "relu": nn.ReLU(inplace=True),

@@ -41,12 +41,14 @@ def main():
             "model_fn": ResNet34,
             "dataset_fn": get_cifar10_loaders,
             "batch_size": 128,
+            "learning_rate": 0.001,
         },
         {
             "dataset_name": "AGNews",
             "model_fn": TransformerModel,
             "dataset_fn": get_ag_news_loaders,
             "batch_size": 64,
+            "learning_rate": 0.0001,
         },
     ]
 
@@ -72,24 +74,25 @@ def main():
                     dataset_fn=exp_config["dataset_fn"],
                     dataset_name=dataset_name,
                     activation=activation,
-                    epochs=30,  # Full 30-epoch run for final results
+                    epochs=30,  # Повний цикл із 30 епох для фінальних результатів
                     batch_size=exp_config["batch_size"],
+                    learning_rate=exp_config["learning_rate"],
                 )
 
                 all_results.extend(exp_results)
 
-                # Save checkpoint
+                # Збереження контрольної точки
                 checkpoint_path = os.path.join(
                     checkpoints_dir, f"checkpoint_{dataset_name}_{activation}.pth"
                 )
                 torch.save(model_state, checkpoint_path)
                 print(f"Saved checkpoint: {checkpoint_path}")
 
-                # Save intermediate results after every activation
+                # Збереження проміжних результатів після кожної активації
                 df = pd.DataFrame(all_results)
                 df.to_csv(f"{output_dir}/results_intermediate.csv", index=False)
 
-                # Save per-activation CSV
+                # Збереження CSV для кожної активації
                 act_df = pd.DataFrame(exp_results)
                 act_df.to_csv(
                     f"{output_dir}/results_{dataset_name}_{activation}.csv", index=False
@@ -101,7 +104,7 @@ def main():
 
                 traceback.print_exc()
 
-    # Final save
+    # Фінальне збереження
     final_df = pd.DataFrame(all_results)
     final_df.to_csv(f"{output_dir}/final_experiment_results.csv", index=False)
     print("\nAll experiments completed.")

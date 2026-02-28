@@ -72,8 +72,8 @@ class ResNet(nn.Module):
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        # Use AdaptiveAvgPool2d to handle any input size automatically
-        # and avoid Pylint false positives with F.avg_pool2d
+        # Використання AdaptiveAvgPool2d для автоматичної обробки будь-якого розміру вхідних даних
+        # та уникнення помилкових спрацьовувань Pylint з F.avg_pool2d
         out = F.adaptive_avg_pool2d(out, (1, 1))
         out = out.view(out.size(0), -1)
         out = self.linear(out)

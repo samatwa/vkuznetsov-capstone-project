@@ -28,12 +28,12 @@ def calculate_metrics(model, dataloader, criterion, device):
 
 def get_comp_cost(model, input_size, device, is_transformer=False, vocab_size=None):
     """
-    Calculate FLOPs using torchprofile.
-    For Transformer: torchprofile may undercount due to optimized SDPA kernels.
-    An additional analytical correction is applied in run_experiment().
+    Розрахунок FLOPs за допомогою torchprofile.
+    Для Transformer: torchprofile може занижувати значення через оптимізовані ядра SDPA.
+    Додаткова аналітична корекція застосовується в run_experiment().
     """
     if is_transformer:
-        # [batch, seq_len] format to match batch_first=True
+        # [batch, seq_len] формат для відповідності batch_first=True
         inputs = torch.randint(0, vocab_size, input_size).to(device)
     else:
         inputs = torch.randn(input_size).to(device)
@@ -48,9 +48,9 @@ def get_comp_cost(model, input_size, device, is_transformer=False, vocab_size=No
 
 def analytical_transformer_flops(seq_len, d_model, nlayers):
     """
-    Analytical FLOPs estimate for Transformer attention layers.
-    Per layer: FLOPs ≈ 2 * L^2 * d  (for scaled dot-product attention)
-    Total across all layers.
+    Аналітична оцінка FLOPs для шарів уваги трансформера.
+    На шар: FLOPs ≈ 2 * L^2 * d (для scaled dot-product attention)
+    Загалом для всіх шарів.
     """
     return 2 * (seq_len**2) * d_model * nlayers
 
@@ -75,10 +75,10 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
         loss = criterion(outputs, labels)
         loss.backward()
 
-        # Gradient clipping — prevents exploding gradients (critical for Mish/Swish)
+        # Відсікання градієнта — запобігає вибуху градієнтів (критично для Mish/Swish)
         torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
 
-        # Record gradient norm AFTER clipping (reflects actual update magnitude)
+        # Запис норми градієнта ПІСЛЯ відсікання (відображає реальну величину оновлення)
         total_norm = 0.0
         for p in model.parameters():
             if p.grad is not None:
@@ -112,7 +112,13 @@ def train_one_epoch(model, dataloader, criterion, optimizer, device):
 
 
 def run_experiment(
-    model_fn, dataset_fn, dataset_name, activation, epochs=30, batch_size=128
+    model_fn,
+    dataset_fn,
+    dataset_name,
+    activation,
+    epochs=30,
+    batch_size=128,
+    learning_rate=None,
 ):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Running experiment: {dataset_name} with {activation} on {device}")
@@ -129,7 +135,7 @@ def run_experiment(
         train_loader, val_loader, test_loader, vocab_size = dataset_fn(
             batch_size=batch_size, vocab_size=20000
         )
-        # [batch, seq_len] — matches batch_first=True
+        # [batch, seq_len] — відповідає batch_first=True
         input_sample_size = (1, 100)
 
     print(
@@ -153,18 +159,21 @@ def run_experiment(
 
     criterion = nn.CrossEntropyLoss()
 
-    # Separate optimiser configs per task:
-    # - CIFAR-10 (ResNet): higher LR, standard weight decay
-    # - AG News (Transformer): lower LR, stronger weight decay for stability
+    # Окремі конфігурації оптимізатора для кожного завдання:
+    # - CIFAR-10 (ResNet): вищий LR (0.001), стандартний weight decay
+    # - AG News (Transformer): нижчий LR (0.0001), сильніший weight decay для стабільності
     if dataset_name == "CIFAR10":
-        optimizer = optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
-    else:
-        optimizer = optim.AdamW(model.parameters(), lr=1e-4, weight_decay=0.01)
+        lr = learning_rate if learning_rate is not None else 1e-3
+        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
+    else:  # AGNews
+        lr = learning_rate if learning_rate is not None else 1e-4
+        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
 
-    # CosineAnnealing decays LR smoothly — better than StepLR for 30 epochs
+    print(f"Using learning rate: {optimizer.param_groups[0]['lr']}")
+    # CosineAnnealing плавно зменшує LR — краще ніж StepLR для 30 епох
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
-    # Calculate FLOPs
+    # Розрахунок FLOPs
     flops = 0
     try:
         flops = get_comp_cost(
@@ -174,7 +183,7 @@ def run_experiment(
             is_transformer=(dataset_name == "AGNews"),
             vocab_size=(vocab_size if dataset_name == "AGNews" else None),
         )
-        # Add analytical attention FLOPs for Transformer (torchprofile misses SDPA)
+        # Додати аналітичні FLOPs уваги для Transformer (torchprofile пропускає SDPA)
         if dataset_name == "AGNews":
             attn_flops = analytical_transformer_flops(
                 seq_len=100, d_model=256, nlayers=2
